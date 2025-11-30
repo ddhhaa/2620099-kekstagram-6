@@ -55,7 +55,7 @@ const renderComments = () => {
 
   commentCountElement.innerHTML = `${commentsShown} из <span class="comments-count">${currentComments.length}</span> комментариев`;
 
-  if (commentsToShow >= currentComments.length) {
+  if (commentsShown >= currentComments.length) {
     commentsLoader.classList.add('hidden');
   } else {
     commentsLoader.classList.remove('hidden');
