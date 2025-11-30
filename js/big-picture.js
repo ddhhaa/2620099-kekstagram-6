@@ -95,15 +95,11 @@ const openBigPicture = (pictureData) => {
   commentsCount.textContent = comments.length;
 
   currentComments = comments;
+
   renderComments();
-
-  commentCountElement.classList.add('hidden');
-  commentsLoader.classList.add('hidden');
-
   checkCommentsLoaderVisibility();
 
-  bigPicture.classList.remove('hidden');
-  document.body.classList.add('modal-open');
+  commentCountElement.classList.remove('hidden');
 };
 
 const closeBigPicture = () => {
