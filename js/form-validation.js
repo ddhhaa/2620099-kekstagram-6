@@ -1,3 +1,6 @@
+import { initEffects, destroyEffects, resetEffects } from './effects.js';
+import { initScale, destroyScale } from './scale.js';
+
 const fileInput = document.querySelector('#upload-file');
 const uploadOverlay = document.querySelector('.img-upload__overlay');
 const form = document.querySelector('.img-upload__form');
@@ -89,8 +92,10 @@ const getHashtagError = (value) => {
 const openForm = () => {
   uploadOverlay.classList.remove('hidden');
   document.body.classList.add('modal-open');
+  initEffects();
+  initScale();
 
-  pristine = new Pristine.default(form, {
+  pristine = new Pristine(form, {
     classTo: 'img-upload__field-wrapper',
     errorClass: 'img-upload__field-wrapper--invalid',
     successClass: 'img-upload__field-wrapper--valid',
@@ -107,6 +112,8 @@ const openForm = () => {
 
 function closeForm() {
   form.reset();
+  destroyEffects();
+  destroyScale();
   fileInput.value = '';
   uploadOverlay.classList.add('hidden');
   document.body.classList.remove('modal-open');
@@ -117,6 +124,10 @@ function onEscape(evt) {
     closeForm();
   }
 }
+
+const onFilterChange = () => {
+  resetEffects();
+};
 
 
 cancelButton.addEventListener('click', closeForm);
