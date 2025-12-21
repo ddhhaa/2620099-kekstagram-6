@@ -147,6 +147,7 @@ const showMessage = (templateId) => {
   document.body.append(message);
 
   const button = message.querySelector('button');
+  const inner = message.querySelector('div');
 
   const onEscKeydown = (evt) => {
     if (evt.key === 'Escape') {
@@ -156,15 +157,16 @@ const showMessage = (templateId) => {
   };
 
   const onOverlayClick = (evt) => {
-    if (evt.target === message) {
+    if (inner && !inner.contains(evt.target)) {
       closeMessage();
     }
   };
 
+
   function closeMessage() {
     message.remove();
     document.removeEventListener('keydown', onEscKeydown);
-    message.removeEventListener('click', onOverlayClick);
+    document.removeEventListener('click', onOverlayClick);
     if (button) {
       button.removeEventListener('click', closeMessage);
     }
@@ -174,8 +176,8 @@ const showMessage = (templateId) => {
     button.addEventListener('click', closeMessage);
   }
 
-  message.addEventListener('click', onOverlayClick);
   document.addEventListener('keydown', onEscKeydown);
+  document.addEventListener('click', onOverlayClick);
 };
 
 
