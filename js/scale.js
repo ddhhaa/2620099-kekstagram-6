@@ -1,4 +1,3 @@
-// js/scale.js
 const Scale = {
   MIN: 25,
   MAX: 100,

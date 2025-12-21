@@ -1,13 +1,24 @@
 import { renderPictures } from './pictures.js';
-import { photosArray } from './photos.js';
 import { initForm } from './form-validation.js';
-import { initEffects } from './effects.js'
+import { initEffects } from './effects.js';
+import { getData } from './api.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-  const photos = photosArray;
-  renderPictures(photos);
+let photos = [];
 
-  initForm();
+const showErrorMessage = () => {
+  const errorContainer = document.createElement('div');
+  errorContainer.textContent = 'Не удалось загрузить данные.';
+  document.body.appendChild(errorContainer);
+};
 
-  initEffects();
-});
+getData()
+  .then((data) => {
+    photos = data;
+    renderPictures(photos);
+
+    initForm();
+    initEffects();
+  })
+  .catch(() => {
+    showErrorMessage();
+  });
