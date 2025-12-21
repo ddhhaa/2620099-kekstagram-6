@@ -1,5 +1,6 @@
-import { initEffects, destroyEffects, resetEffects } from './effects.js';
+import { initEffects, destroyEffects} from './effects.js';
 import { initScale, destroyScale } from './scale.js';
+import { sendData } from './api.js';
 
 const fileInput = document.querySelector('#upload-file');
 const uploadOverlay = document.querySelector('.img-upload__overlay');
@@ -12,6 +13,7 @@ const cancelButton = document.querySelector('#upload-cancel');
 const hashtagsInput = form.querySelector('.text__hashtags');
 const descriptionInput = form.querySelector('.text__description');
 
+const submitButton = document.querySelector('.img-upload__submit');
 
 const MAX_HASHTAGS = 5;
 const MAX_HASHTAG_LENGTH = 20;
@@ -112,6 +114,11 @@ const openForm = () => {
 
 function closeForm() {
   form.reset();
+
+  if (pristine) {
+    pristine.reset();
+  }
+
   destroyEffects();
   destroyScale();
   fileInput.value = '';
@@ -119,18 +126,57 @@ function closeForm() {
   document.body.classList.remove('modal-open');
 }
 
+
 function onEscape(evt) {
   if (evt.key === 'Escape') {
     closeForm();
   }
 }
 
-const onFilterChange = () => {
-  resetEffects();
-};
-
 
 cancelButton.addEventListener('click', closeForm);
+
+
+const showMessage = (templateId) => {
+  const template = document.querySelector(`#${templateId}`);
+  if (!template) {
+    return;
+  }
+
+  const message = template.content.querySelector('section').cloneNode(true);
+  document.body.append(message);
+
+  const button = message.querySelector('button');
+
+  const onEscKeydown = (evt) => {
+    if (evt.key === 'Escape') {
+      evt.preventDefault();
+      closeMessage();
+    }
+  };
+
+  const onOverlayClick = (evt) => {
+    if (evt.target === message) {
+      closeMessage();
+    }
+  };
+
+  function closeMessage() {
+    message.remove();
+    document.removeEventListener('keydown', onEscKeydown);
+    message.removeEventListener('click', onOverlayClick);
+    if (button) {
+      button.removeEventListener('click', closeMessage);
+    }
+  }
+
+  if (button) {
+    button.addEventListener('click', closeMessage);
+  }
+
+  message.addEventListener('click', onOverlayClick);
+  document.addEventListener('keydown', onEscKeydown);
+};
 
 
 export function initForm() {
@@ -145,8 +191,29 @@ export function initForm() {
 
   form.addEventListener('submit', (evt) => {
     evt.preventDefault();
-    if (pristine.validate()) {
-      form.submit();
+
+    if (!pristine.validate()) {
+      return;
     }
+
+    const formData = new FormData(form);
+
+    submitButton.disabled = true;
+    submitButton.textContent = 'Публикую...';
+
+    sendData(formData)
+      .then(() => {
+        closeForm();
+        showMessage('success');
+      })
+      .catch(() => {
+        closeForm();
+        showMessage('error');
+      })
+      .finally(() => {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Опубликовать';
+      });
   });
 }
+

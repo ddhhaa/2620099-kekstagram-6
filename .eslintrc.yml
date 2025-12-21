@@ -4,6 +4,11 @@ parserOptions:
   ecmaVersion: 2018
   sourceType: "module"
 
+rules:
+  quotes: [1, "single"]
+  no-unused-vars: warn
+  no-console: warn
+
 env:
   es2017: true
   browser: true
