@@ -3,7 +3,6 @@ import { openBigPicture } from './big-picture.js';
 const pictures = document.querySelector('.pictures');
 const picturesTemplate = document.querySelector('#picture').content.querySelector('.picture');
 
-
 const createPicture = (picture) => {
   const pictureElement = picturesTemplate.cloneNode(true);
 
@@ -24,12 +23,13 @@ const createPicture = (picture) => {
   return pictureElement;
 };
 
-const renderPictures = (objects)=>{
+
+const renderPictures = (objects) => {
   const fragment = document.createDocumentFragment();
-  for (let i = 0; i<objects.length; i++){
+  for (let i = 0; i < objects.length; i++) {
     fragment.appendChild(createPicture(objects[i]));
   }
   pictures.appendChild(fragment);
 };
 
-export {renderPictures};
+export { renderPictures};
