@@ -2,9 +2,14 @@ import { initEffects, destroyEffects} from './effects.js';
 import { initScale, destroyScale } from './scale.js';
 import { sendData } from './api.js';
 
+
 const fileInput = document.querySelector('#upload-file');
 const uploadOverlay = document.querySelector('.img-upload__overlay');
 const form = document.querySelector('.img-upload__form');
+
+const previewImage = document.querySelector('.img-upload__preview img');
+const effectsPreviews = document.querySelectorAll('.effects__preview');
+
 
 let pristine = null;
 
@@ -18,6 +23,8 @@ const submitButton = document.querySelector('.img-upload__submit');
 const MAX_HASHTAGS = 5;
 const MAX_HASHTAG_LENGTH = 20;
 const MAX_COMMENT_LENGTH = 140;
+
+const FILE_TYPES = ['jpg', 'jpeg', 'png'];
 
 
 fileInput.addEventListener('change', () => {
@@ -90,6 +97,26 @@ const getHashtagError = (value) => {
   return '';
 };
 
+const loadPicture = () => {
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if (!file) {
+      return;
+    }
+    const fileName = file.name.toLowerCase();
+    const matches = FILE_TYPES.some((it) => fileName.endsWith(it));
+
+    if (matches) {
+      const imageUrl = URL.createObjectURL(file);
+
+      previewImage.src = imageUrl;
+
+      effectsPreviews.forEach((preview) => {
+        preview.style.backgroundImage = `url('${imageUrl}')`;
+      });
+    }
+  });
+};
 
 const openForm = () => {
   uploadOverlay.classList.remove('hidden');
@@ -182,6 +209,8 @@ const showMessage = (templateId) => {
 
 
 export function initForm() {
+  loadPicture();
+
   fileInput.addEventListener('change', () => {
     uploadOverlay.classList.remove('hidden');
     document.body.classList.add('modal-open');
