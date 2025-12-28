@@ -163,7 +163,6 @@ function onEscape(evt) {
 
 cancelButton.addEventListener('click', closeForm);
 
-
 const showMessage = (templateId) => {
   const template = document.querySelector(`#${templateId}`);
   if (!template) {
