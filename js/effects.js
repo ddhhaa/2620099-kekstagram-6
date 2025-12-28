@@ -9,17 +9,17 @@ const EFFECTS = {
 
 const DEFAULT_EFFECT = 'none';
 let currentEffect = DEFAULT_EFFECT;
-let slider;
-
+let slider = null;
 
 const imageElement = document.querySelector('.img-upload__preview img');
 const effectLevelValue = document.querySelector('.effect-level__value');
-const effectLevelSlider = document.querySelector('.effect-level__slider');
+let effectLevelSlider = null;
 const effectsList = document.querySelector('.effects__list');
+const effectLevelContainer = document.querySelector('.img-upload__effect-level');
 
-const effectLevelContainer = document.querySelector('.effect-level');
 
 const applyEffect = (value) => {
+
   if (currentEffect === DEFAULT_EFFECT) {
     imageElement.style.filter = 'none';
     return;
@@ -30,40 +30,62 @@ const applyEffect = (value) => {
 };
 
 const showSlider = () => {
-  effectLevelContainer.classList.remove('hidden');
+  if (effectLevelContainer) {
+    effectLevelContainer.classList.remove('hidden');
+  }
 };
 
 const hideSlider = () => {
-  effectLevelContainer.classList.add('hidden');
+  if (effectLevelContainer) {
+    effectLevelContainer.classList.add('hidden');
+  }
 };
-
 
 const resetEffects = () => {
   currentEffect = DEFAULT_EFFECT;
-  effectLevelValue.value = '100';
-
-  if (slider) {
-    slider.updateOptions({
-      range: {
-        min: 0,
-        max: 100
-      },
-      start: 100,
-      step: 1
-    });
+  if (effectLevelValue) {
+    effectLevelValue.value = '';
   }
 
-  applyEffect('100');
+  const noneRadio = document.querySelector('#effect-none');
+  if (noneRadio) {
+    noneRadio.checked = true;
+  }
+
+  if (slider) {
+    slider.destroy();
+    slider = null;
+  }
+
+  if (imageElement) {
+    imageElement.style.filter = 'none';
+  }
+
   hideSlider();
 };
 
 const updateSlider = (effect) => {
+  if (!effectLevelSlider) {
+    effectLevelSlider = document.querySelector('.effect-level__slider');
+    if (!effectLevelSlider) {
+      return;
+    }
+  }
+
   if (effect === DEFAULT_EFFECT) {
-    hideSlider();
+    if (imageElement) {
+      imageElement.style.filter = 'none';
+    }
+    if (effectLevelValue) {
+      effectLevelValue.value = '';
+    }
+
     if (slider) {
       slider.destroy();
       slider = null;
     }
+
+    hideSlider();
     return;
   }
 
@@ -73,49 +95,86 @@ const updateSlider = (effect) => {
 
   if (slider) {
     slider.destroy();
+    slider = null;
   }
 
-  slider = noUiSlider.create(effectLevelSlider, {
+
+  noUiSlider.create(effectLevelSlider, {
     range: { min, max },
     start: max,
     step,
     connect: 'lower'
   });
 
+  slider = effectLevelSlider.noUiSlider;
+
   slider.on('update', () => {
-    const value = slider.get();
-    effectLevelValue.value = value;
+    const value = Number(slider.get());
+    if (effectLevelValue) {
+      effectLevelValue.value = value;
+    }
     applyEffect(value);
   });
 
-  applyEffect(max);
-  effectLevelValue.value = max;
+  slider.set(max);
 };
 
-
 const onEffectChange = (evt) => {
-  if (!evt.target.classList.contains('effects__radio')) {
+  const effectItem = evt.target.closest('.effects__item');
+  if (!effectItem) {
     return;
   }
 
-  currentEffect = evt.target.value;
+  const input = effectItem.querySelector('input[type="radio"]');
+  if (!input) {
+    return;
+  }
+
+  currentEffect = input.value;
   updateSlider(currentEffect);
 };
 
 const initEffects = () => {
-  hideSlider();
-  effectsList.addEventListener('change', onEffectChange);
-};
+  if (!effectsList) {
+    return;
+  }
 
+  effectsList.addEventListener('click', onEffectChange);
+
+  const initSlider = () => {
+    effectLevelSlider = document.querySelector('.effect-level__slider');
+    if (effectLevelSlider) {
+      resetEffects();
+    }
+  };
+
+  const uploadOverlay = document.querySelector('.img-upload__overlay');
+  if (uploadOverlay) {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (!mutation.target.classList.contains('hidden')) {
+          initSlider();
+        }
+      });
+    });
+
+    observer.observe(uploadOverlay, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+  }
+
+};
 
 const destroyEffects = () => {
   if (slider) {
     slider.destroy();
     slider = null;
   }
-  effectsList.removeEventListener('change', onEffectChange);
+  if (effectsList) {
+    effectsList.removeEventListener('click', onEffectChange);
+  }
   resetEffects();
 };
-
 
 export { initEffects, destroyEffects, resetEffects };

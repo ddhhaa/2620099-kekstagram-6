@@ -1,6 +1,6 @@
 import { initEffects, destroyEffects} from './effects.js';
-import { initScale, destroyScale } from './scale.js';
-import { sendData } from './api.js';
+import { initScale, destroyScale, resetScale } from './scale.js';
+import { postData } from './api.js';
 
 
 const fileInput = document.querySelector('#upload-file');
@@ -26,11 +26,6 @@ const MAX_COMMENT_LENGTH = 140;
 
 const FILE_TYPES = ['jpg', 'jpeg', 'png'];
 
-
-fileInput.addEventListener('change', () => {
-  uploadOverlay.classList.remove('hidden');
-  document.body.classList.add('modal-open');
-});
 
 const validateComment = (value) => value.length <= MAX_COMMENT_LENGTH;
 
@@ -97,32 +92,21 @@ const getHashtagError = (value) => {
   return '';
 };
 
-const loadPicture = () => {
-  fileInput.addEventListener('change', () => {
-    const file = fileInput.files[0];
-    if (!file) {
-      return;
-    }
-    const fileName = file.name.toLowerCase();
-    const matches = FILE_TYPES.some((it) => fileName.endsWith(it));
-
-    if (matches) {
-      const imageUrl = URL.createObjectURL(file);
-
-      previewImage.src = imageUrl;
-
-      effectsPreviews.forEach((preview) => {
-        preview.style.backgroundImage = `url('${imageUrl}')`;
-      });
-    }
-  });
-};
 
 const openForm = () => {
   uploadOverlay.classList.remove('hidden');
   document.body.classList.add('modal-open');
-  initEffects();
+
+  const effectLevel = document.querySelector('.img-upload__effect-level');
+  effectLevel.classList.add('hidden');
+
+  // previewImage.src = '';
+  // effectsPreviews.forEach((preview) => {
+  //   preview.style.backgroundImage = '';
+  // });
+
   initScale();
+  initEffects();
 
   pristine = new Pristine(form, {
     classTo: 'img-upload__field-wrapper',
@@ -147,15 +131,31 @@ function closeForm() {
   }
 
   destroyEffects();
+  resetScale();
   destroyScale();
   fileInput.value = '';
   uploadOverlay.classList.add('hidden');
   document.body.classList.remove('modal-open');
+  document.removeEventListener('keydown', onEscape);
 }
 
 
 function onEscape(evt) {
-  if (evt.key === 'Escape') {
+  if (evt.key !== 'Escape') {
+    return;
+  }
+
+  const activeElement = document.activeElement;
+
+  if (
+    activeElement === hashtagsInput ||
+    activeElement === descriptionInput
+  ) {
+    return;
+  }
+
+  if (!uploadOverlay.classList.contains('hidden')) {
+    evt.preventDefault();
     closeForm();
   }
 }
@@ -163,13 +163,14 @@ function onEscape(evt) {
 
 cancelButton.addEventListener('click', closeForm);
 
+
 const showMessage = (templateId) => {
   const template = document.querySelector(`#${templateId}`);
   if (!template) {
     return;
   }
 
-  const message = template.content.querySelector('section').cloneNode(true);
+  const message = template.content.querySelector(`.${templateId}`).cloneNode(true);
   document.body.append(message);
 
   const button = message.querySelector('button');
@@ -183,11 +184,10 @@ const showMessage = (templateId) => {
   };
 
   const onOverlayClick = (evt) => {
-    if (inner && !inner.contains(evt.target)) {
+    if (!inner.contains(evt.target)) {
       closeMessage();
     }
   };
-
 
   function closeMessage() {
     message.remove();
@@ -208,15 +208,6 @@ const showMessage = (templateId) => {
 
 
 export function initForm() {
-  loadPicture();
-
-  fileInput.addEventListener('change', () => {
-    uploadOverlay.classList.remove('hidden');
-    document.body.classList.add('modal-open');
-    openForm();
-    document.addEventListener('keydown', onEscape);
-  });
-
   cancelButton.addEventListener('click', closeForm);
 
   form.addEventListener('submit', (evt) => {
@@ -231,13 +222,12 @@ export function initForm() {
     submitButton.disabled = true;
     submitButton.textContent = 'Публикую...';
 
-    sendData(formData)
+    postData(formData)
       .then(() => {
         closeForm();
         showMessage('success');
       })
       .catch(() => {
-        closeForm();
         showMessage('error');
       })
       .finally(() => {
@@ -247,3 +237,27 @@ export function initForm() {
   });
 }
 
+const onFileChange = () => {
+  const file = fileInput.files[0];
+  if (!file) {
+    return;
+  }
+
+  const fileName = file.name.toLowerCase();
+  const matches = FILE_TYPES.some((type) => fileName.endsWith(type));
+  if (!matches) {
+    return;
+  }
+
+  const imageUrl = URL.createObjectURL(file);
+
+  previewImage.src = imageUrl;
+  effectsPreviews.forEach((preview) => {
+    preview.style.backgroundImage = `url('${imageUrl}')`;
+  });
+
+  openForm();
+};
+
+
+fileInput.addEventListener('change', onFileChange);

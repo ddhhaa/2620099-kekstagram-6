@@ -32,6 +32,7 @@ const updatePictures = (picturesData) => {
 
 const showErrorMessage = () => {
   const errorContainer = document.createElement('div');
+  errorContainer.classList.add('data-error');
   errorContainer.textContent = 'Не удалось загрузить данные.';
   document.body.appendChild(errorContainer);
 };
@@ -48,8 +49,8 @@ getData()
       debounce(updatePictures, RERENDER_DELAY)
     );
 
-    initForm();
     initEffects();
+    initForm();
   })
   .catch(() => {
     showErrorMessage();

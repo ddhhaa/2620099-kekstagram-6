@@ -1,42 +1,57 @@
-import { postsCount, MESSAGES, NAMES, DESCRIPTIONS } from './data.js';
-import { getRandomInteger, createRandomIdFromRangeGenerator } from './util.js';
+import { renderPictures } from './pictures.js';
+import { initForm } from './form-validation.js';
+import { initEffects } from './effects.js';
+import { getData } from './api.js';
+import { initFilters } from './filters.js';
 
-const createPhoto = (photoId) => {
-  const likesCount = getRandomInteger(15, 200);
-  const commentsCount = getRandomInteger(0, 30);
-  const randomDescriptionIndex = getRandomInteger(0, DESCRIPTIONS.length - 1);
+let photos = [];
 
-  const commentIdGenerator = createRandomIdFromRangeGenerator(1, 900);
-  const commentsArray = [];
+const RERENDER_DELAY = 500;
 
-  for (let i = 0; i < commentsCount; i++) {
-    const randomAvatar = getRandomInteger(1, 6);
-    const randomNameIndex = getRandomInteger(0, NAMES.length - 1);
-    const randomMessageIndex = getRandomInteger(0, MESSAGES.length - 1);
-    commentsArray.push({
-      id: commentIdGenerator(),
-      avatar: `img/avatar-${randomAvatar}.svg`,
-      message: MESSAGES[randomMessageIndex],
-      name: NAMES[randomNameIndex]
-    });
-  }
-
-  return {
-    id: photoId,
-    url: `photos/${photoId}.jpg`,
-    description: DESCRIPTIONS[randomDescriptionIndex],
-    likes: likesCount,
-    comments: commentsArray
+const debounce = (callback, timeoutDelay = 500) => {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      callback(...args);
+    }, timeoutDelay);
   };
 };
 
-const photosArray = [];
-const photoIdGenerator = createRandomIdFromRangeGenerator(1, 25);
 
-for (let photoIndex = 0; photoIndex < postsCount; photoIndex++) {
-  const photoId = photoIdGenerator();
-  const photo = createPhoto(photoId);
-  photosArray.push(photo);
-}
+const clearPictures = () => {
+  const pictureElements = document.querySelectorAll('.picture');
+  pictureElements.forEach((picture) => picture.remove());
+};
 
-export { photosArray };
+const updatePictures = (picturesData) => {
+  clearPictures();
+  renderPictures(picturesData);
+};
+
+
+const showErrorMessage = () => {
+  const errorContainer = document.createElement('div');
+  errorContainer.classList.add('data-error');
+  errorContainer.textContent = 'Не удалось загрузить данные.';
+  document.body.appendChild(errorContainer);
+};
+
+
+getData()
+  .then((data) => {
+    photos = [...data];
+
+    renderPictures(photos);
+
+    initFilters(
+      photos,
+      debounce(updatePictures, RERENDER_DELAY)
+    );
+
+    initEffects();
+    initForm();
+  })
+  .catch(() => {
+    showErrorMessage();
+  });

@@ -1,16 +1,28 @@
-const BASE_URL = 'https://29.javascript.htmlacademy.pro/kekstagram';
+const Urls = {
+  GET: 'https://29.javascript.htmlacademy.pro/kekstagram/data',
+  POST: 'https://29.javascript.htmlacademy.pro/kekstagram',
+};
 
-const getData = () => fetch(`${BASE_URL}/data`)
-  .then((response) => {
-    if (!response.ok) {
-      throw new Error();
-    }
-    return response.json();
-  });
+const getData = () =>
+  fetch(Urls.GET)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Failed to load data');
+      }
+      return response.json();
+    });
 
-const sendData = (body) => fetch(BASE_URL, {
-  method: 'POST',
-  body,
-});
+const postData = (body) =>
+  fetch(Urls.POST, {
+    method: 'POST',
+    mode: 'cors',
+    credentials: 'same-origin',
+    body,
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Failed to send data');
+      }
+    });
 
-export { getData, sendData };
+export { getData, postData };
