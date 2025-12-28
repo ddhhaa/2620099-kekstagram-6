@@ -13,7 +13,6 @@ let commentsShown = 0;
 
 const cancelButton = bigPicture.querySelector('.big-picture__cancel');
 
-
 const createComment = (comment) => {
   const commentElement = document.createElement('li');
   commentElement.classList.add('social__comment');
@@ -71,7 +70,6 @@ const renderComments = () => {
   }
 };
 
-
 const onCommentsLoaderClick = () => {
   renderComments();
 };
@@ -104,7 +102,6 @@ const openBigPicture = (pictureData) => {
   likesCount.textContent = likes;
   commentsCount.textContent = comments.length;
 
-  // Добавляем текст описания для модального окна
   const socialCaption = bigPicture.querySelector('.social__caption');
   socialCaption.textContent = description;
 
@@ -121,12 +118,10 @@ const openBigPicture = (pictureData) => {
   commentCountElement.classList.remove('hidden');
 };
 
-
 const closeBigPicture = () => {
   bigPicture.classList.add('hidden');
   document.body.classList.remove('modal-open');
 };
-
 
 cancelButton.addEventListener('click', () => {
   closeBigPicture();
