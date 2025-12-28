@@ -5,14 +5,24 @@ const Scale = {
   DEFAULT: 100
 };
 
-const scaleInput = document.querySelector('.scale__control--value');
-const smallerButton = document.querySelector('.scale__control--smaller');
-const biggerButton = document.querySelector('.scale__control--bigger');
-const imageElement = document.querySelector('.img-upload__preview img');
+const getElement = (selector) => {
+  const element = document.querySelector(selector);
+  return element;
+};
+
+const scaleInput = getElement('.scale__control--value');
+const smallerButton = getElement('.scale__control--smaller');
+const biggerButton = getElement('.scale__control--bigger');
+const imageElement = getElement('.img-upload__preview img');
 
 let currentScale = Scale.DEFAULT;
 
+
 const updateScale = () => {
+  if (!scaleInput || !imageElement) {
+    return;
+  }
+
   scaleInput.value = `${currentScale}%`;
   imageElement.style.transform = `scale(${currentScale / 100})`;
 };
@@ -37,15 +47,23 @@ const resetScale = () => {
 };
 
 const initScale = () => {
+
+  if (!smallerButton || !biggerButton) {
+    return;
+  }
+
   smallerButton.addEventListener('click', onSmallerButtonClick);
   biggerButton.addEventListener('click', onBiggerButtonClick);
   resetScale();
 };
 
 const destroyScale = () => {
-  smallerButton.removeEventListener('click', onSmallerButtonClick);
-  biggerButton.removeEventListener('click', onBiggerButtonClick);
-  resetScale();
+  if (smallerButton) {
+    smallerButton.removeEventListener('click', onSmallerButtonClick);
+  }
+  if (biggerButton) {
+    biggerButton.removeEventListener('click', onBiggerButtonClick);
+  }
 };
 
 export { initScale, destroyScale, resetScale };
